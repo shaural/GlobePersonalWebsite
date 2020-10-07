@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app" style="background-color: #000000;">
     <Home />
   </div>
 </template>
