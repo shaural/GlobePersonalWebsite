@@ -1,16 +1,16 @@
 <template>
   <div id="app" style="background-color: #000000;">
-    <Home />
+    <Globe />
   </div>
 </template>
 
 <script>
-import Home from "./components/Home.vue";
+import Globe from "./components/Globe.vue";
 
 export default {
   name: "App",
   components: {
-    Home
+    Globe
   }
 };
 </script>
