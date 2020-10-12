@@ -25,60 +25,45 @@ export default {
   mounted() {
     // Create map instance
     var chart = am4core.create(this.$refs.chartdiv, am4maps.MapChart);
-
-    chart.width = am4core.percent(100);
-    chart.height = am4core.percent(100);
-
-    chart.panBehavior = "rotateLongLat";
-
-    // limits vertical rotation
-    chart.adapter.add("deltaLatitude", function(delatLatitude) {
-      return am4core.math.fitToRange(delatLatitude, -90, 90);
-    });
-
-    // Set map definition
-    chart.geodata = am4geodata_worldLow;
-
-    // Set projection
-    chart.projection = new am4maps.projections.Orthographic();
-
-    // Add countries
+    setupChart(chart);
     plotCountries(chart);
-
-    // latitude and longitude lines
-    var graticuleSeries = chart.series.push(new am4maps.GraticuleSeries());
-    graticuleSeries.mapLines.template.line.stroke = am4core.color("#67b7dc");
-    graticuleSeries.mapLines.template.line.strokeOpacity = 0.2;
-    graticuleSeries.fitExtent = false;
-
-    // Background -> water
-    chart.backgroundSeries.mapPolygons.template.polygon.fill = am4core.color(
-      "#aadaff"
-    );
-    chart.backgroundSeries.mapPolygons.template.polygon.fillOpacity = 1;
-
-    let animation;
-    setTimeout(function() {
-      animation = chart.animate(
-        { property: "deltaLongitude", to: 100000 },
-        20000000
-      );
-    }, 3000);
-
-    chart.seriesContainer.events.on("down", function() {
-      if (animation) {
-        animation.stop();
-      }
-    });
-
-    // chart.seriesContainer.events.on("up", function() {
-    //   animation = chart.animate(
-    //     { property: "deltaLongitude", to: 100000 },
-    //     20000000
-    //   );
-    // });
+    plotBgAndLines(chart);
+    animate(chart);
   }
 };
+
+function setupChart(chart) {
+  chart.width = am4core.percent(100);
+  chart.height = am4core.percent(100);
+
+  chart.panBehavior = "rotateLongLat";
+
+  // limits vertical rotation
+  chart.adapter.add("deltaLatitude", function(delatLatitude) {
+    return am4core.math.fitToRange(delatLatitude, -90, 90);
+  });
+
+  // Set map definition
+  chart.geodata = am4geodata_worldLow;
+
+  // Set projection
+  chart.projection = new am4maps.projections.Orthographic();
+}
+
+function plotBgAndLines(chart) {
+  // latitude and longitude lines
+  var graticuleSeries = chart.series.push(new am4maps.GraticuleSeries());
+  graticuleSeries.mapLines.template.line.stroke = am4core.color("#67b7dc");
+  graticuleSeries.mapLines.template.line.strokeOpacity = 0.2;
+  graticuleSeries.fitExtent = false;
+
+  // Background -> water
+  chart.backgroundSeries.mapPolygons.template.polygon.fill = am4core.color(
+    "#aadaff"
+  );
+  chart.backgroundSeries.mapPolygons.template.polygon.fillOpacity = 1;
+}
+
 function plotCountries(chart) {
   // Not Visited (no hover)
   // Create map polygon series
@@ -119,6 +104,29 @@ function plotCountries(chart) {
   // Create hover state and set alternative fill color
   var hs = polygonTemplate.states.create("hover");
   hs.properties.fill = am4core.color("#367B25");
+}
+
+function animate(chart) {
+  let animation;
+  setTimeout(function() {
+    animation = chart.animate(
+      { property: "deltaLongitude", to: 100000 },
+      20000000
+    );
+  }, 3000);
+
+  chart.seriesContainer.events.on("down", function() {
+    if (animation) {
+      animation.stop();
+    }
+  });
+
+  // chart.seriesContainer.events.on("up", function() {
+  //   animation = chart.animate(
+  //     { property: "deltaLongitude", to: 100000 },
+  //     20000000
+  //   );
+  // });
 }
 </script>
 
