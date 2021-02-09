@@ -6,18 +6,59 @@
 import * as am4core from "@amcharts/amcharts4/core";
 import * as am4maps from "@amcharts/amcharts4/maps";
 import am4geodata_worldLow from "@amcharts/amcharts4-geodata/worldLow";
+import am4geodata_usaLow from "@amcharts/amcharts4-geodata/usaLow";
+import am4geodata_indiaLow from "@amcharts/amcharts4-geodata/indiaLow";
+
 const visited_countries = [
+  "BE",
   "FR",
   "DE",
-  "BE",
   "NL",
   "IT",
   "GB",
-  "US",
   "CA",
-  "IN",
   "SG",
-  "AT"
+  "AT",
+  "ES",
+  "PL",
+  "CH",
+  "EG",
+  "GR",
+  "DO",
+  "MA",
+  "TR",
+  "PT",
+  "LU",
+  "MC"
+];
+const visited_states_usa = [
+  "US-CA",
+  "US-TX",
+  "US-FL",
+  "US-AK",
+  "US-WA",
+  "US-NV",
+  "US-MA",
+  "US-OH",
+  "US-WI",
+  "US-CO",
+  "US-IN",
+  "US-IL",
+  "US-NJ",
+  "US-MN",
+  "US-VA",
+  "US-NY",
+  "US-MO"
+];
+const visited_states_india = [
+  "IN-GJ",
+  "IN-MH",
+  "IN-GA",
+  "IN-DL",
+  "IN-UP",
+  "IN-PB",
+  "IN-RJ",
+  "IN-KA"
 ];
 
 export default {
@@ -26,9 +67,11 @@ export default {
     // Create map instance
     var chart = am4core.create(this.$refs.chartdiv, am4maps.MapChart);
     setupChart(chart);
-    plotCountries(chart);
     plotBgAndLines(chart);
-    animate(chart);
+    plotCountries(chart);
+    plotStatesUSA(chart);
+    plotStatesIndia(chart);
+    // animate(chart);
   }
 };
 
@@ -104,38 +147,98 @@ function plotCountries(chart) {
   // Create hover state and set alternative fill color
   var hs = polygonTemplate.states.create("hover");
   hs.properties.fill = am4core.color("#367B25");
-}
 
-function animate(chart) {
-  let animation;
-  setTimeout(function() {
-    animation = chart.animate(
-      { property: "deltaLongitude", to: 100000 },
-      20000000
-    );
-  }, 3000);
+  // chart.deltaLongitude = -80;
+  // // Zoom
+  // // NOTE: this will only work when the polygon is included in the series (USA and INDIA -> removed from global series)
+  // chart.events.on("ready", function() {
+  //   var india = polygonSeries.getPolygonById("IN");
 
-  chart.seriesContainer.events.on("down", function() {
-    if (animation) {
-      animation.stop();
-    }
-  });
+  //   // Pre-zoom
+  //   chart.zoomToMapObject(india);
 
-  // chart.seriesContainer.events.on("up", function() {
-  //   animation = chart.animate(
-  //     { property: "deltaLongitude", to: 100000 },
-  //     20000000
-  //   );
+  //   // Set active state
+  //   // setTimeout(function() {
+  //   //   india.isActive = true;
+  //   // }, 1000);
   // });
 }
+
+function plotStatesUSA(chart) {
+  let usaSeries = chart.series.push(new am4maps.MapPolygonSeries());
+  usaSeries.geodata = am4geodata_usaLow;
+
+  // Display only needed states
+  usaSeries.include = visited_states_usa;
+
+  let usPolygonTemplate = usaSeries.mapPolygons.template;
+  usPolygonTemplate.tooltipText = "{name}";
+  // usPolygonTemplate.fill = chart.colors.getIndex(1);
+  // usPolygonTemplate.nonScalingStroke = true;
+  usPolygonTemplate.fill = am4core.color("#74B266"); // old color: #74B266
+  usPolygonTemplate.stroke = am4core.color("#000000"); // outline color
+  usPolygonTemplate.strokeWidth = 0.5;
+  usPolygonTemplate.strokeOpacity = 0.8;
+
+  // Hover state
+  let hs = usPolygonTemplate.states.create("hover");
+  hs.properties.fill = am4core.color("#367B25");
+}
+
+function plotStatesIndia(chart) {
+  let indiaSeries = chart.series.push(new am4maps.MapPolygonSeries());
+  indiaSeries.geodata = am4geodata_indiaLow;
+
+  // Display only needed states
+  indiaSeries.include = visited_states_india;
+
+  let indiaPolygonTemplate = indiaSeries.mapPolygons.template;
+  indiaPolygonTemplate.tooltipText = "{name}";
+  indiaPolygonTemplate.fill = am4core.color("#74B266"); // old color: #74B266
+  indiaPolygonTemplate.stroke = am4core.color("#000000"); // outline color
+  indiaPolygonTemplate.strokeWidth = 0.5;
+  indiaPolygonTemplate.strokeOpacity = 0.8;
+
+  // Hover state
+  let hs = indiaPolygonTemplate.states.create("hover");
+  hs.properties.fill = am4core.color("#367B25");
+}
+
+// function animate(chart) {
+//   let animation;
+//   setTimeout(function() {
+//     animation = chart.animate(
+//       { property: "deltaLongitude", to: 100000 },
+//       20000000
+//     );
+//   }, 3000);
+
+//   chart.seriesContainer.events.on("down", function() {
+//     if (animation) {
+//       animation.stop();
+//     }
+//   });
+
+//   // chart.seriesContainer.events.on("up", function() {
+//   //   animation = chart.animate(
+//   //     { property: "deltaLongitude", to: 100000 },
+//   //     20000000
+//   //   );
+//   // });
+// }
 </script>
 
 <style scoped>
 #chartContainer {
-  width: 99%;
-  height: 96vh;
-  position: relative;
+  width: 75%;
+  height: 75%;
+  position: absolute;
+  margin: auto;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
   overflow: hidden;
-  padding: 10px;
+  background: #000;
 }
 </style>
