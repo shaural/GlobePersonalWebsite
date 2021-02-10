@@ -60,18 +60,51 @@ const visited_states_india = [
   "IN-RJ",
   "IN-KA"
 ];
+const latitude_map = new Map([
+  ["IN", -80],
+  ["US", 100],
+  ["BE", 0],
+  ["FR", 0],
+  ["DE", -10],
+  ["NL", 0],
+  ["IT", -10],
+  ["GB", 0],
+  ["CA", 100],
+  ["SG", -100],
+  ["AT", -10],
+  ["ES", 0],
+  ["PL", -10],
+  ["CH", 0],
+  ["EG", -30],
+  ["GR", -10],
+  ["DO", 80],
+  ["MA", 0],
+  ["TR", -30],
+  ["PT", 0],
+  ["LU", 0],
+  ["MC", 0]
+]);
 
 export default {
   name: "Globe",
-  mounted() {
+  data: function() {
+    return {
+      chart: undefined,
+      visited_countries: visited_countries,
+      visited_states_usa: visited_states_usa,
+      visited_states_india: visited_states_india,
+      latitude_map: latitude_map
+    };
+  },
+  mounted: function() {
     // Create map instance
-    var chart = am4core.create(this.$refs.chartdiv, am4maps.MapChart);
-    setupChart(chart);
-    plotBgAndLines(chart);
-    plotCountries(chart);
-    plotStatesUSA(chart);
-    plotStatesIndia(chart);
-    // animate(chart);
+    this.chart = am4core.create(this.$refs.chartdiv, am4maps.MapChart);
+    setupChart(this.chart);
+    plotBgAndLines(this.chart);
+    plotCountries(this.chart, this.latitude_map);
+    plotStatesUSA(this.chart);
+    plotStatesIndia(this.chart);
+    // animate();
   }
 };
 
@@ -107,7 +140,7 @@ function plotBgAndLines(chart) {
   chart.backgroundSeries.mapPolygons.template.polygon.fillOpacity = 1;
 }
 
-function plotCountries(chart) {
+function plotCountries(chart, latitude_map) {
   // Not Visited (no hover)
   // Create map polygon series
   var polygonSeriesDisbaled = chart.series.push(new am4maps.MapPolygonSeries());
@@ -148,20 +181,7 @@ function plotCountries(chart) {
   var hs = polygonTemplate.states.create("hover");
   hs.properties.fill = am4core.color("#367B25");
 
-  // chart.deltaLongitude = -80;
-  // // Zoom
-  // // NOTE: this will only work when the polygon is included in the series (USA and INDIA -> removed from global series)
-  // chart.events.on("ready", function() {
-  //   var india = polygonSeries.getPolygonById("IN");
-
-  //   // Pre-zoom
-  //   chart.zoomToMapObject(india);
-
-  //   // Set active state
-  //   // setTimeout(function() {
-  //   //   india.isActive = true;
-  //   // }, 1000);
-  // });
+  focusOnCountry(chart, polygonSeries, "SG", latitude_map);
 }
 
 function plotStatesUSA(chart) {
@@ -202,6 +222,27 @@ function plotStatesIndia(chart) {
   // Hover state
   let hs = indiaPolygonTemplate.states.create("hover");
   hs.properties.fill = am4core.color("#367B25");
+}
+
+function focusOnCountry(chart, polygonSeries, countryCode, latitude_map) {
+  // TODO: error or return on else? or leave behaviour as is?
+  if (latitude_map.has(countryCode)) {
+    chart.deltaLongitude = latitude_map.get(countryCode);
+  }
+  chart.events.on("ready", function() {
+    // Zoom
+    // NOTE: this will only work when the polygon is included in the series (USA and INDIA -> removed from global series)
+    // chart.events.on("ready", function() {
+    var countryPolygon = polygonSeries.getPolygonById(countryCode);
+
+    // Pre-zoom
+    chart.zoomToMapObject(countryPolygon);
+
+    // Set active state
+    setTimeout(function() {
+      countryPolygon.isActive = true;
+    }, 1000);
+  });
 }
 
 // function animate(chart) {
