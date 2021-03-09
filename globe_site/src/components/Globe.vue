@@ -90,6 +90,7 @@ export default {
   data: function() {
     return {
       chart: undefined,
+      animation: undefined,
       visited_countries: visited_countries,
       visited_states_usa: visited_states_usa,
       visited_states_india: visited_states_india,
@@ -113,6 +114,17 @@ export default {
 
       // Set projection
       this.chart.projection = new am4maps.projections.Orthographic();
+
+      // Set home for chart.GoHome() (to zoom out)
+      this.chart.homeZoomLevel = 0;
+
+      // Add button to zoom out
+      var home = this.chart.chartContainer.createChild(am4core.Button);
+      home.label.text = "Home";
+      home.align = "right";
+      home.events.on("hit", () => {
+        this.chart.goHome();
+      });
     },
     plotBgAndLines() {
       // latitude and longitude lines
@@ -233,6 +245,46 @@ export default {
           countryPolygon.isActive = true;
         }, 1000);
       });
+    },
+    rotateTo(long, lat) {
+      if (this.animation) {
+        this.animation.stop();
+      }
+      this.animation = this.chart.animate(
+        [
+          {
+            property: "deltaLongitude",
+            to: long
+          },
+          {
+            property: "deltaLatitude",
+            to: lat
+          }
+        ],
+        2000
+      );
+    },
+    animate() {
+      // this.chart.goHome(); // to reset zoom
+      setTimeout(() => {
+        this.animation = this.chart.animate(
+          { property: "deltaLongitude", to: 100000 },
+          20000000
+        );
+      }, 3000);
+
+      this.chart.seriesContainer.events.on("down", () => {
+        if (this.animation) {
+          this.animation.stop();
+        }
+      });
+
+      this.chart.seriesContainer.events.on("up", () => {
+        this.animation = this.chart.animate(
+          { property: "deltaLongitude", to: 100000 },
+          20000000
+        );
+      });
     }
   },
   mounted: function() {
@@ -243,32 +295,9 @@ export default {
     this.plotCountries();
     this.plotStatesUSA();
     this.plotStatesIndia();
-    // animate();
+    // this.animate();
   }
 };
-
-// function animate(chart) {
-//   let animation;
-//   setTimeout(function() {
-//     animation = chart.animate(
-//       { property: "deltaLongitude", to: 100000 },
-//       20000000
-//     );
-//   }, 3000);
-
-//   chart.seriesContainer.events.on("down", function() {
-//     if (animation) {
-//       animation.stop();
-//     }
-//   });
-
-//   // chart.seriesContainer.events.on("up", function() {
-//   //   animation = chart.animate(
-//   //     { property: "deltaLongitude", to: 100000 },
-//   //     20000000
-//   //   );
-//   // });
-// }
 </script>
 
 <style scoped>
