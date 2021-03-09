@@ -119,6 +119,7 @@ export default {
       home.align = "right";
       home.events.on("hit", () => {
         this.chart.goHome();
+        this.animate();
       });
     },
     plotBgAndLines() {
@@ -212,12 +213,10 @@ export default {
     },
     animate() {
       // this.chart.goHome(); // to reset zoom
-      setTimeout(() => {
-        this.animation = this.chart.animate(
-          { property: "deltaLongitude", to: 100000 },
-          20000000
-        );
-      }, 3000);
+      this.animation = this.chart.animate(
+        { property: "deltaLongitude", to: 100000 },
+        20000000
+      );
 
       this.chart.seriesContainer.events.on("down", () => {
         if (this.animation) {
