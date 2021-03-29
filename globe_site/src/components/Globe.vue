@@ -243,13 +243,6 @@ export default {
           this.animation.stop();
         }
       });
-
-      // this.chart.seriesContainer.events.on("up", () => {
-      //   this.animation = this.chart.animate(
-      //     { property: "deltaLongitude", to: 100000 },
-      //     20000000
-      //   );
-      // });
     }
   },
   mounted: function() {
