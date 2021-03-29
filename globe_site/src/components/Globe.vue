@@ -8,6 +8,7 @@ import * as am4maps from "@amcharts/amcharts4/maps";
 import worldGeoData from "@amcharts/amcharts4-geodata/worldLow";
 import usaGeoData from "@amcharts/amcharts4-geodata/usaLow";
 import indiaGeoData from "@amcharts/amcharts4-geodata/indiaLow";
+import { mapGetters, mapMutations } from "vuex";
 
 const visitedCountries = [
   "BE",
@@ -60,29 +61,29 @@ const visitedStatesIndia = [
   "IN-RJ",
   "IN-KA"
 ];
-const latitudeMap = new Map([
-  ["IN", -80],
-  ["US", 100],
-  ["BE", 0],
-  ["FR", 0],
-  ["DE", -10],
-  ["NL", 0],
-  ["IT", -10],
-  ["GB", 0],
-  ["CA", 100],
-  ["SG", -100],
-  ["AT", -10],
-  ["ES", 0],
-  ["PL", -10],
-  ["CH", 0],
-  ["EG", -30],
-  ["GR", -10],
-  ["DO", 80],
-  ["MA", 0],
-  ["TR", -30],
-  ["PT", 0],
-  ["LU", 0],
-  ["MC", 0]
+const latLongMap = new Map([
+  ["IN", [-80, 0]],
+  ["US", [100, 0]],
+  ["BE", [0, 0]],
+  ["FR", [0, 0]],
+  ["DE", [-10, 0]],
+  ["NL", [0, 0]],
+  ["IT", [-10, 0]],
+  ["GB", [0, 0]],
+  ["CA", [100, 0]],
+  ["SG", [-100, 0]],
+  ["AT", [-10, 0]],
+  ["ES", [0, 0]],
+  ["PL", [-10, 0]],
+  ["CH", [0, 0]],
+  ["EG", [-30, 0]],
+  ["GR", [-10, 0]],
+  ["DO", [80, 0]],
+  ["MA", [0, 0]],
+  ["TR", [-30, 0]],
+  ["PT", [0, 0]],
+  ["LU", [0, 0]],
+  ["MC", [0, 0]]
 ]);
 
 export default {
@@ -95,16 +96,34 @@ export default {
       visitedCountries: visitedCountries,
       visitedStatesUSA: visitedStatesUSA,
       visitedStatesIndia: visitedStatesIndia,
-      latitudeMap: latitudeMap
+      latLongMap: latLongMap
     };
   },
+  computed: {
+    ...mapGetters(["country"])
+  },
+  watch: {
+    country: {
+      handler(newCountry) {
+        if (!newCountry) {
+          // this.animate();
+        } else {
+          if (visitedCountries.indexOf(newCountry) != -1) {
+            this.focusOnCountry(this.countrySeries, newCountry);
+          }
+        }
+      }
+    }
+  },
   methods: {
+    ...mapMutations(["unsetCountry"]),
     setupChart() {
       this.chart = am4core.create(this.$refs.chartdiv, am4maps.MapChart);
       this.chart.width = am4core.percent(100);
       this.chart.height = am4core.percent(100);
       this.chart.panBehavior = "rotateLongLat";
-
+      // this.chart.seriesContainer.draggable = false;
+      // chart.seriesContainer.resizable = false;
       // limits vertical rotation
       this.chart.adapter.add("deltaLatitude", function(delatLatitude) {
         return am4core.math.fitToRange(delatLatitude, -90, 90);
@@ -119,7 +138,8 @@ export default {
       home.align = "right";
       home.events.on("hit", () => {
         this.chart.goHome();
-        this.animate();
+        // this.animate();
+        // this.unsetCountry();
       });
     },
     plotBgAndLines() {
@@ -177,23 +197,28 @@ export default {
       hoverState.properties.fill = am4core.color("#367B25");
     },
     focusOnCountry(polygonSeries, countryCode) {
-      // TODO: error or return on else? or leave behaviour as is?
-      if (this.latitudeMap.has(countryCode)) {
-        this.chart.deltaLongitude = this.latitudeMap.get(countryCode);
+      if (this.animation) {
+        this.animation.stop();
       }
-      this.chart.events.on("ready", () => {
-        // NOTE: this will only work when the polygon is included in the series (USA and INDIA -> removed from global series)
-        // this.chart.events.on("ready", function() {
-        var countryPolygon = polygonSeries.getPolygonById(countryCode);
-        this.chart.zoomToMapObject(countryPolygon);
+      // TODO: error or return on else? or leave behaviour as is?
+      if (this.latLongMap.has(countryCode)) {
+        let latLong = this.latLongMap.get(countryCode)
+        this.rotateTo(latLong[0], latLong[1])
+        // this.chart.deltaLongitude = this.latitudeMap.get(countryCode);
+      }
+      // this.chart.events.on("ready", () => {
+      // NOTE: this will only work when the polygon is included in the series (USA and INDIA -> removed from global series)
+      // this.chart.events.on("ready", function() {
+      var countryPolygon = polygonSeries.getPolygonById(countryCode);
+      this.chart.zoomToMapObject(countryPolygon);
 
-        // Set active state
-        // setTimeout(function() {
-        //   countryPolygon.isActive = true;
-        // }, 1000);
-      });
+      // Set active state
+      // setTimeout(function() {
+      //   countryPolygon.isActive = true;
+      // }, 1000);
+      // });
     },
-    rotateTo(long, lat) {
+    rotateTo(lat, long) {
       if (this.animation) {
         this.animation.stop();
       }
@@ -239,7 +264,7 @@ export default {
     this.plotCountries();
     this.plotStates(usaGeoData, this.visitedStatesUSA);
     this.plotStates(indiaGeoData, this.visitedStatesIndia);
-    this.focusOnCountry(this.countrySeries, "SG"); // TODO: move out of here (testing)
+    // this.focusOnCountry(this.countrySeries, "SG"); // TODO: move out of here (testing)
     // this.animate();
   }
 };
