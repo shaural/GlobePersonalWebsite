@@ -158,6 +158,16 @@ export default {
       visitedTemplate.stroke = am4core.color("#000000"); // outline color
       visitedTemplate.strokeWidth = 0.5;
       visitedTemplate.strokeOpacity = 0.8;
+      visitedTemplate.events.on("hit", ev => {
+        if (this.animation) {
+          this.animation.stop();
+        }
+        // zoom to an object
+        ev.target.series.chart.zoomToMapObject(ev.target);
+
+        // get object info
+        console.log(ev.target);
+      });
       var hoverState = visitedTemplate.states.create("hover");
       hoverState.properties.fill = am4core.color("#367B25");
     },
@@ -173,6 +183,16 @@ export default {
       statesTemplate.stroke = am4core.color("#000000"); // outline color
       statesTemplate.strokeWidth = 0.5;
       statesTemplate.strokeOpacity = 0.8;
+      statesTemplate.events.on("hit", ev => {
+        if (this.animation) {
+          this.animation.stop();
+        }
+        // zoom to an object
+        ev.target.series.chart.zoomToMapObject(ev.target);
+
+        // get object info
+        console.log(ev.target);
+      });
       let hoverState = statesTemplate.states.create("hover");
       hoverState.properties.fill = am4core.color("#367B25");
     },
@@ -224,12 +244,12 @@ export default {
         }
       });
 
-      this.chart.seriesContainer.events.on("up", () => {
-        this.animation = this.chart.animate(
-          { property: "deltaLongitude", to: 100000 },
-          20000000
-        );
-      });
+      // this.chart.seriesContainer.events.on("up", () => {
+      //   this.animation = this.chart.animate(
+      //     { property: "deltaLongitude", to: 100000 },
+      //     20000000
+      //   );
+      // });
     }
   },
   mounted: function() {
