@@ -11,10 +11,12 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/shaural/GlobePersonalWebsite/server/pkg/api"
+	"github.com/shaural/GlobePersonalWebsite/server/pkg/common"
 )
 
 func main() {
-    port := "8000"
+    config := common.Config()
+    port := config.Port
     log.Printf("Listening on port:%s", port)
 
     sigChan := make(chan os.Signal, 1)
