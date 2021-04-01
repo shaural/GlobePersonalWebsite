@@ -14,8 +14,8 @@ import (
 type Database interface {
 	Initialize() error
 	Close() error
-	UpdateCountry(*Country) error
-	UpdateState(*State) error
+	InsertCountry(*Country) error
+	InsertState(*State) error
 	UpdateCard(*Card) error
 	GetCountries() ([]*Country, error)
 	GetStates() ([]*State, error)
@@ -54,24 +54,28 @@ func (gdb *gormDb) Close() error {
 	return gdb.Database.Close()
 }
 
-func (gdb *gormDb) UpdateCountry(country *Country) error {
-	return gdb.Database.
-		Where(Country{ID: country.ID}).
-		Assign(country).
-		FirstOrCreate(&country).Error
+func (gdb *gormDb) InsertCountry(country *Country) error {
+	return gdb.Database.Create(&country).Error
 }
 
-func (gdb *gormDb) UpdateState(state *State) error {
-	return gdb.Database.
-		Where(State{ID: state.ID}).
-		Assign(state).
-		FirstOrCreate(&state).Error
+func (gdb *gormDb) InsertState(state *State) error {
+	return gdb.Database.Create(&state).Error
 }
 
 func (gdb *gormDb) UpdateCard(card *Card) error {
 	return gdb.Database.
 		Where(Card{CountryID: card.CountryID, Title: card.Title}).
-		Assign(card).
+		Assign(&Card{
+			StateID:       card.StateID,
+			Title:         card.Title,
+			Description:   card.Description,
+			StartDate:     card.StartDate,
+			EndDate:       card.EndDate,
+			ImgFolderPath: card.ImgFolderPath,
+			Link:          card.Link,
+			Github:        card.Github,
+			Type:          card.Type,
+		}).
 		FirstOrCreate(&card).Error
 }
 

@@ -10,14 +10,14 @@ import (
 type Country struct {
 	ID string
 	Name string
-	Latitute int
+	Latitude int
 	Longitude int
 }
 
 // State model for state metadata
 type State struct {
 	ID string
-	CountryID int
+	CountryID string
 	Name string
 }
 
