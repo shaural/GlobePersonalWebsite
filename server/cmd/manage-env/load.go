@@ -19,16 +19,21 @@ const (
 func loadCountries(ldb db.Database) error {
 	countryCsvFile, err := os.Open(countryFile)
 	if err != nil {
-		log.Fatalln("Couldn't open the csv file: %s, Error:", countryFile, err)
+		return  err
 	}
 	countryReader := csv.NewReader(countryCsvFile)
+	colHeaders, err := countryReader.Read()
+	if err != nil {
+		return err
+	}
+	log.Println(colHeaders)
 	for {
 		country, err := countryReader.Read()
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		lat, err := strconv.Atoi(country[2])
 		if err != nil {
@@ -46,8 +51,8 @@ func loadCountries(ldb db.Database) error {
 			Latitude:  lat,
 			Longitude: lon,
 		}
-		ldb.InsertCountry(newCountry)
-		fmt.Printf("Insert Country: %v", newCountry)
+		log.Println(ldb.InsertCountry(newCountry)) // Error is most likely duplicate key
+		fmt.Printf("Insert Country: %v\n", newCountry)
 	}
 	return loadStates(ldb)
 }
@@ -55,23 +60,29 @@ func loadCountries(ldb db.Database) error {
 func loadStates(ldb db.Database) error {
 	stateCsvFile, err := os.Open(stateFile)
 	if err != nil {
-		log.Fatalln("Couldn't open the csv file: %s, Error:", countryFile, err)
+		return err
 	}
 	stateReader := csv.NewReader(stateCsvFile)
+	colHeaders, err := stateReader.Read()
+	if err != nil {
+		return err
+	}
+	log.Println(colHeaders)
 	for {
 		state, err := stateReader.Read()
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		newState := &db.State{
 			ID:        state[0],
 			CountryID: state[1],
 			Name:      state[2],
 		}
-		ldb.InsertState(newState)
-		fmt.Printf("Insert State: %v", newState)
+		log.Println(ldb.InsertState(newState)) // Error is most likely duplicate key
+		fmt.Printf("Insert State: %v\n", newState)
 	}
+	return nil
 }
