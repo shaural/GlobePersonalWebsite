@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/jinzhu/gorm"
@@ -29,7 +30,7 @@ type gormDb struct {
 // NewDatabase initializes a new instance of a Database
 func NewDatabase(ctx context.Context) (Database, error) {
 	config := common.Config()
-	db, err := gorm.Open("postgres", config.DatabaseURL)
+	db, err := gorm.Open("postgres", fmt.Sprintf("%s?sslmode=disable", config.DatabaseURL))
 	if err != nil {
 		return nil, err
 	}
