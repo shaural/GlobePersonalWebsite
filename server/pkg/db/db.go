@@ -12,6 +12,7 @@ import (
 // Database ...
 type Database interface {
 	Initialize() error
+	Close() error
 	UpdateCountry(*Country) error
 	UpdateState(*State) error
 	UpdateCard(*Card) error
