@@ -15,40 +15,41 @@ import (
 )
 
 func main() {
-    config := common.Config()
-    port := config.Port
-    log.Printf("Listening on port:%s", port)
+	config := common.Config()
+	port := config.Port
+	log.Printf("Listening on port:%s", port)
 
-    sigChan := make(chan os.Signal, 1)
-    signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
-    defer signal.Stop(sigChan)
-    defer close(sigChan)
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+	defer signal.Stop(sigChan)
+	defer close(sigChan)
 
-    router := mux.NewRouter()
+	router := mux.NewRouter()
 
-    api.AddMainHandler(router)
+	api.AddMainHandler(router)
+	api.AddMapHandler(router)
 
-    mux := http.NewServeMux()
-    mux.Handle("/", router)
-    srv := &http.Server{
-        Addr: fmt.Sprintf(":%s", port),
-        Handler: mux,
-    }
+	mux := http.NewServeMux()
+	mux.Handle("/", router)
+	srv := &http.Server{
+		Addr:    fmt.Sprintf(":%s", port),
+		Handler: mux,
+	}
 
-    idleConnsClosed := make(chan struct{})
-    go func() {
-        sig := <-sigChan
-        log.Printf("Received signal %s", sig)
-        if err := srv.Shutdown(context.Background()); err != nil {
-            log.Printf("HTTP server Shutrdown: %v", err)
-        }
-        close(idleConnsClosed)
-    }()
+	idleConnsClosed := make(chan struct{})
+	go func() {
+		sig := <-sigChan
+		log.Printf("Received signal %s", sig)
+		if err := srv.Shutdown(context.Background()); err != nil {
+			log.Printf("HTTP server Shutrdown: %v", err)
+		}
+		close(idleConnsClosed)
+	}()
 
-    http.Handle("/", router)
-    if err := srv.ListenAndServe(); err != nil {
-        log.Printf("Listen and serve error: %v", err)
-    }
+	http.Handle("/", router)
+	if err := srv.ListenAndServe(); err != nil {
+		log.Printf("Listen and serve error: %v", err)
+	}
 
-    <-idleConnsClosed
+	<-idleConnsClosed
 }
