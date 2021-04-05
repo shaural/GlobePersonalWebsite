@@ -18,7 +18,7 @@ type Database interface {
 	InsertState(*State) error
 	UpdateCard(*Card) error
 	GetCountries() ([]*Country, error)
-	GetStates() ([]*State, error)
+	GetStates(string) ([]*State, error)
 	GetCards() ([]*Card, error)
 }
 
@@ -83,8 +83,12 @@ func (gdb *gormDb) GetCountries() (countries []*Country, err error) {
 	return countries, gdb.Database.Find(&countries).Error
 }
 
-func (gdb *gormDb) GetStates() (states []*State, err error) {
-	return states, gdb.Database.Find(&states).Error
+func (gdb *gormDb) GetStates(country string) (states []*State, err error) {
+	gormDB := gdb.Database
+	if len(country) > 0 {
+		gormDB = gormDB.Where("country_id = ?", country)
+	}
+	return states, gormDB.Find(&states).Error
 }
 
 func (gdb *gormDb) GetCards() (cards []*Card, err error) {

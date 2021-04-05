@@ -139,7 +139,7 @@ func (f *stateFixture) SetupTest() {
 func (f *stateFixture) Test_GetStates() {
 	f.mock.ExpectQuery("^SELECT.*").WillReturnRows(f.rows)
 
-	res, err := f.gormdb.GetStates()
+	res, err := f.gormdb.GetStates("")
 
 	f.Equal(1, len(res))
 	f.Nil(err)
@@ -149,10 +149,20 @@ func (f *stateFixture) Test_GetStates() {
 func (f *stateFixture) Test_GetStates_error() {
 	f.mock.ExpectQuery("^SELECT.*").WillReturnError(fmt.Errorf("QUERY ERROR"))
 
-	res, err := f.gormdb.GetStates()
+	res, err := f.gormdb.GetStates("")
 
 	f.EqualError(err, "QUERY ERROR")
 	f.Equal([]*State{}, res)
+}
+
+func (f *stateFixture) Test_GetStates_country() {
+	f.mock.ExpectQuery("^SELECT.*WHERE").WillReturnRows(f.rows)
+
+	res, err := f.gormdb.GetStates("US")
+
+	f.Equal(1, len(res))
+	f.Nil(err)
+	f.Equal(f.state, res[0])
 }
 
 func (f *stateFixture) Test_InsertState() {

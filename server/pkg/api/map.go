@@ -10,7 +10,8 @@ import (
 func AddMapHandler(router *mux.Router) {
 	mapRouter := router.PathPrefix("/api/map").Subrouter()
 	mapRouter.HandleFunc("/country", handleGetCountry).Methods("GET")
-	mapRouter.HandleFunc("/state", handleGetState).Methods("GET")
+	mapRouter.HandleFunc("/state", handleGetAllStates).Methods("GET")
+	mapRouter.HandleFunc("/state/{country:[a-zA-Z]+}", handleGetState).Methods("GET")
 }
 
 func handleGetCountry(w http.ResponseWriter, r *http.Request) {
@@ -26,19 +27,33 @@ func handleGetCountry(w http.ResponseWriter, r *http.Request) {
 	SendJSONResponse(countries, w)
 }
 
+func handleGetAllStates(w http.ResponseWriter, r *http.Request) {
+	ldb, err := db.NewDatabase(r.Context())
+	if CheckAndWriteError(err, http.StatusInternalServerError, w) {
+		return
+	}
+	defer ldb.Close()
+	states, err := ldb.GetStates("")
+	if CheckAndWriteError(err, http.StatusInternalServerError, w) {
+		return
+	}
+	SendJSONResponse(states, w)
+}
+
 func handleGetState(w http.ResponseWriter, r *http.Request) {
 	ldb, err := db.NewDatabase(r.Context())
 	if CheckAndWriteError(err, http.StatusInternalServerError, w) {
 		return
 	}
 	defer ldb.Close()
-	states, err := ldb.GetStates()
+	country, ok := mux.Vars(r)["country"]
+	if !ok {
+		http.Error(w, "no country id provided", http.StatusBadRequest)
+		return
+	}
+	states, err := ldb.GetStates(country)
 	if CheckAndWriteError(err, http.StatusInternalServerError, w) {
 		return
 	}
-	stateMap := make(map[string][]*db.State)
-	for _, state := range states {
-		stateMap[state.CountryID] = append(stateMap[state.CountryID], state)
-	}
-	SendJSONResponse(stateMap, w)
+	SendJSONResponse(states, w)
 }
