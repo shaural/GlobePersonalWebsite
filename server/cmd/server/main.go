@@ -10,6 +10,7 @@ import (
 	"syscall"
 
 	"github.com/gorilla/mux"
+	_ "github.com/joho/godotenv/autoload"
 	"github.com/shaural/GlobePersonalWebsite/server/pkg/api"
 	"github.com/shaural/GlobePersonalWebsite/server/pkg/common"
 )

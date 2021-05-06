@@ -8,6 +8,7 @@ import * as am4maps from "@amcharts/amcharts4/maps";
 import worldGeoData from "@amcharts/amcharts4-geodata/worldLow";
 import usaGeoData from "@amcharts/amcharts4-geodata/usaLow";
 import indiaGeoData from "@amcharts/amcharts4-geodata/indiaLow";
+import { getCountries } from "../api/map-api";
 
 const visitedCountries = [
   "BE",
@@ -99,6 +100,13 @@ export default {
     };
   },
   methods: {
+    initGlobeState() {
+      // map_api
+      // get countries
+      let countries = getCountries();
+      console.log("countries");
+      console.log(countries);
+    },
     setupChart() {
       this.chart = am4core.create(this.$refs.chartdiv, am4maps.MapChart);
       this.chart.width = am4core.percent(100);
@@ -246,6 +254,7 @@ export default {
     }
   },
   mounted: function() {
+    this.initGlobeState();
     // Create map instance
     this.setupChart();
     this.plotBgAndLines();
